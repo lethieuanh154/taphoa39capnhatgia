@@ -1,8 +1,7 @@
 #!/bin/bash
-
 echo "window.__env = {
+  UserName: '${USERNAME}',
   LatestBranchId: '${LatestBranchId}',
-  UserName: '${UserName}',
   Password: '${Password}',
   retailer: '${retailer}'
 };" > src/assets/env.js

@@ -1,6 +1,6 @@
 window['__env'] = {
-  LatestBranchId: '',
   UserName: '',
+  LatestBranchId: '',
   Password: '',
   retailer: '',
 };
