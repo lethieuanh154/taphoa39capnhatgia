@@ -1,0 +1,265 @@
+<mat-toolbar class="icon">
+  <span class="taphoa39 ">Tạp Hóa 39 - Cập Nhật Giá</span>
+
+</mat-toolbar>
+<div class="container mt-5">
+  <mat-card>
+    <mat-form-field>
+      <input type="text" class="search-bar" matInput [formControl]="searchControl" [matAutocomplete]="auto"
+        placeholder="Tìm kiếm: nhập mã hàng hoặc tên hàng và gõ Enter... " (keyup.enter)="onSearch($event)">
+      <mat-icon matPrefix class="my-icon">search</mat-icon>
+      <mat-autocomplete #auto="matAutocomplete">
+        <mat-option *ngFor="let option of filteredOptions | async" [value]="option.FullName">
+          <img [src]="option.Image" alt="option image" class="option-image">
+          {{ option.FullName }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-toolbar>
+      <button mat-button class="save-button" (click)="onSave()"
+        [ngClass]="{'active-button': activeButton === ''}">Lưu</button>
+
+      <button mat-button class="update-button" (click)="onUpdate()"
+        [ngClass]="{'active-button': activeButton === ''}">Cập nhật đến
+        KiotViet</button>
+      <button mat-button class="ton-kho-button" (click)="checkRemains()">
+        Kiểm tra hết hàng
+        <span *ngIf="showLowStockWarning" class="warning-icon"></span>
+      </button>
+      <button mat-button class="clear-cache-button" (click)="clearCache()">Xóa Cache</button>
+    </mat-toolbar>
+  </mat-card>
+</div>
+<div *ngIf="isLoading" class="loading-overlay">
+  <div class="spinner"></div>
+  <p>Đang tải dữ liệu...</p>
+</div>
+
+<div class="main-container">
+  <div class="category-list">
+    <ul>
+      <li *ngFor="let category of categories" (click)="onCategoryClick(category.path)"
+        [ngClass]="{'active-category': activeCategory === category.path}">
+        {{ category.name }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Bảng sản phẩm -->
+  <div class="product-table">
+    <table mat-table [dataSource]="filteredProducts" class="mat-elevation-z8">
+
+      <ng-container matColumnDef="Image">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Ảnh</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="img-tooltip-wrapper">
+            <img class="thumbnail" [src]="element.Image" alt="product" />
+            <div class="tooltip-img">
+              <img [src]="element.Image" alt="preview" />
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Cột Mã Hàng -->
+      <ng-container matColumnDef="Code">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Mã Hàng</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput [(ngModel)]="element.Code" tabindex="1"
+            (focus)="onInputFocus($event)">
+        </td>
+      </ng-container>
+
+      <!-- Cột Tên Hàng -->
+      <ng-container matColumnDef="FullName">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Tên Hàng</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput [(ngModel)]="element.FullName"
+            matTooltip="{{ element.FullName.length > 15 ? (element.FullName) : element.FullName }}" tabindex="1"
+            (focus)="onInputFocus($event)">
+        </td>
+      </ng-container>
+
+      <!-- Cột Giá Bán -->
+      <ng-container matColumnDef="FinalBasePrice">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br>mong muốn</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput type="text" [value]="formatNumber(element.FinalBasePrice)"
+           (input)="onInputFinalBasePrice($event, element);updateCost(element)"
+            (keydown)="validateNumber($event)" tabindex="1" (focus)="onInputFocus($event)">
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="BasePrice">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán  <br> đề xuất</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <!-- <input class="input-field custom-input" matInput type="text" [value]="formatNumber(element.BasePrice)"
+            (input)="onInputBasePrice($event, element)" (keydown)="validateNumber($event)" tabindex="1"
+            (focus)="onInputFocus($event)"> -->
+            {{element.BasePrice | number:'1.0-0'}}
+        </td>
+      </ng-container>
+      
+      <!-- Cột Giá Vốn -->
+      <ng-container matColumnDef="Cost">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Vốn <br> Đơn vị </th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          {{element.Cost | number:'1.0-0'}}
+        </td>
+      </ng-container>
+
+      <!-- Cột Tồn Kho -->
+      <ng-container matColumnDef="OnHand">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Tồn Kho</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+
+          {{element.OnHand | number:'1.3-3'}}
+        </td>
+      </ng-container>
+
+
+
+      <!-- Cột Giá vốn lốc
+      <ng-container matColumnDef="PackCost">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá vốn lốc</th>
+        <td mat-cell *matCellDef="let element">
+          <input class="input-field custom-input" matInput type="number" [(ngModel)]="element.PackCost"
+            readonly>
+        </td>
+      </ng-container> -->
+
+      <!-- Cột Giá gốc thùng
+      <ng-container matColumnDef="OriginalBoxPrice">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá vốn <br>thùng</th>
+        <td mat-cell *matCellDef="let element">
+          <input class="input-field custom-input" matInput type="number" [(ngModel)]="element.OriginalBoxPrice"
+             readonly>
+        </td>
+      </ng-container> -->
+
+      <!-- Cột Mô Tả Chi Tiết -->
+      <ng-container matColumnDef="Description">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Mô Tả <br>Chi Tiết</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <textarea class="input-field custom-input" matInput [(ngModel)]="element.Description"
+            [disabled]="!element.Master"
+            matTooltip="{{ element.Description.length > 15 ? (element.Description) : element.Description }}"
+            tabindex="1" (focus)="onInputFocus($event)"></textarea>
+        </td>
+      </ng-container>
+
+      <!-- Cột Quy cách đóng gói
+      <ng-container matColumnDef="PackingSpec">
+        <th mat-header-cell *matHeaderCellDef>Quy cách <br>lốc</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput [(ngModel)]="element.PackingSpec"
+            (input)="updateCost(element)"  (keydown)="validateNumber($event)"
+            tabindex="1" (focus)="onInputFocus($event)">
+        </td>
+      </ng-container> -->
+      <!-- Cột Lẻ -->
+      <ng-container matColumnDef="Retail">
+        <th mat-header-cell *matHeaderCellDef>Lẻ <br>(đơn vị nhỏ nhất)</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput [(ngModel)]="element.Retail" 
+            [disabled]="!element.Master"
+            (input)="updateCost(element)"
+            (keydown)="validateNumber($event)"  (keydown.space)="openInputDialog(element)" tabindex="1" (focus)="onInputFocus($event)">
+        </td>
+      </ng-container>
+
+      <!-- Cột Quy cách đơn vị -->
+      <ng-container matColumnDef="UnitSpec">
+        <th mat-header-cell *matHeaderCellDef>Quy cách <br>đơn vị</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          {{element.ConversionValue}}
+          <!-- <input class="input-field custom-input" matInput [(ngModel)]="element.UnitSpec" (input)="updateCost(element)"
+             (keydown)="validateNumber($event)" tabindex="1"
+            (focus)="onInputFocus($event)"> -->
+        </td>
+      </ng-container>
+
+
+
+      <!-- Cột Thùng -->
+      <ng-container matColumnDef="Box">
+        <th mat-header-cell *matHeaderCellDef>Thùng</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput [(ngModel)]="element.Box" 
+            [disabled]="!element.Master"
+            (input)="updateCost(element)"
+            (keydown)="validateNumber($event)" tabindex="1" (focus)="onInputFocus($event)"
+            (keydown.space)="openInputDialog(element)">
+            
+        </td>
+      </ng-container>
+
+      <!-- Cột Chiết khấu -->
+      <ng-container matColumnDef="Discount">
+        <th mat-header-cell *matHeaderCellDef>Chiết khấu trên<br> 1 sản phẩm</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput type="text"
+            [disabled]="!element.Master"
+            [value]="element.Discount === 0 ? '': formatNumber(element.Discount)"
+            (input)="onInputDiscount($event, element); updateCost(element)" (keydown)="validateNumber($event)"
+            (keydown.space)="openInputDialog(element)"
+            tabindex="1" (focus)="onInputFocus($event)">
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="Discount2">
+        <th mat-header-cell *matHeaderCellDef>Chiết khấu trên <br>tổng tiền</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput type="text"
+            [disabled]="!element.Master"
+            [value]="element.Discount2 === 0 ? '': formatNumber(element.Discount2)"
+            (input)="onInputDiscount2($event, element); updateCost(element)" (keydown)="validateNumber($event)"
+            (keydown.space)="openInputDialog(element)"
+            tabindex="1" (focus)="onInputFocus($event)">
+        </td>
+      </ng-container>
+
+      <!-- Cột Thành tiền -->
+      <ng-container matColumnDef="TotalPrice">
+        <th mat-header-cell *matHeaderCellDef>Thành tiền</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput type="text"
+            [disabled]="!element.Master"
+            [value]="element.TotalPrice === 0 ? '' : formatNumber(element.TotalPrice)"
+            (input)="onInputTotalPrice($event, element); updateCost(element)" (keydown)="validateNumber($event)" 
+            (keydown.space)="openInputDialog(element);"
+            tabindex="1" (focus)="onInputFocus($event)">
+        </td>
+      </ng-container>
+
+      <!-- Cột Đơn vị -->
+      <ng-container matColumnDef="Unit">
+        <th mat-header-cell *matHeaderCellDef>Đơn vị</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          {{element.Unit}}
+        </td>
+      </ng-container>
+    
+      <!-- Hàng tiêu đề -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <!-- Hàng dữ liệu -->
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</div>
