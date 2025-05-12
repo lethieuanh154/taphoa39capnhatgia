@@ -1,19 +1,17 @@
-FROM node:18-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
-# Copy các file cấu hình cần thiết
-COPY package*.json ./
-COPY angular.json ./
-COPY tsconfig*.json ./
 
 # Copy toàn bộ source code vào /app
-COPY ./src ./src
-
+COPY . .
 # Install with special flags to fix the rollup issue
+RUN rm package-lock.json
+RUN rm -rf node_modules
+RUN npm cache clean --force
+RUN npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps 
 RUN npm install -g @angular/cli --legacy-peer-deps
 RUN npm install --legacy-peer-deps
-RUN npm install @rollup/rollup-linux-x64-musl --save-optional
 
 EXPOSE 4200
 

@@ -5,7 +5,8 @@ backend/__pycache__/
 
 # Ignore environment files
 .env
-
+run.sh
+env.js
 # Ignore virtual environments
 backend/venv/
 backend/.venv/
