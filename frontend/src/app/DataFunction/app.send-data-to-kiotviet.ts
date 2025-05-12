@@ -11,12 +11,13 @@ interface KiotVietProductRequest {
     BranchForProductCostss: any[];
     ListUnitPriceBookDetail: any[];
 }
+const env = (window as any).__env;
 
 export class KiotVietService {
     private readonly updateItemUrl = 'https://api-man1.kiotviet.vn/api';
     private readonly getUpdateItemUrl = 'https://api-man1.kiotviet.vn/api/products';
-    private readonly retailer = environment.retailer; // Replace with your retailer
-    private readonly branchId = environment.LatestBranchId; // Replace with your branch ID
+    private readonly retailer = env.retailer; // Replace with your retailer
+    private readonly branchId = env.LatestBranchId; // Replace with your branch ID
     private accessToken: string | null = null;
     private async getAccessToken(): Promise<string> {
         if (this.accessToken) {
@@ -88,7 +89,7 @@ export class KiotVietService {
         })
         const fD = new FormData();
         fD.append("product", JSON.stringify(formDataGetFromKiotViet.Product))
-        fD.append("BranchForProductCostss", `[{ "Id": ${environment.LatestBranchId}, "Name": "Chi nhánh trung tâm" }]`)
+        fD.append("BranchForProductCostss", `[{ "Id": ${env.LatestBranchId}, "Name": "Chi nhánh trung tâm" }]`)
         fD.append("ListUnitPriceBookDetail", "[]")
 
         try {
