@@ -4,7 +4,7 @@ backend/__pycache__/
 *.pyo
 
 # Ignore environment files
-.env
+
 
 # Ignore virtual environments
 backend/venv/

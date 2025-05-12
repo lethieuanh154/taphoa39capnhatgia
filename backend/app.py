@@ -106,6 +106,7 @@ if __name__ == "__main__":
         print("Running in LOCAL mode", env)
         app.run(host="0.0.0.0", port=5000)
     else:
+        
         print("Running in PRODUCTION mode")
         app.run(host='0.0.0.0', port=8000)
       
