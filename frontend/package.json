@@ -5,7 +5,8 @@
     "ng": "ng",
     "start": "NG_BUILD_PARALLEL_TS=0 ng serve",
     "build": "ng build",
-    "watch": "ng build --watch --configuration development"
+    "watch": "ng build --watch --configuration development",
+    "postinstall": "esbuild --version || npm rebuild esbuild"
   },
   "private": true,
   "dependencies": {
@@ -40,10 +41,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "ts-node": "~10.9.0",
     "typescript": "~5.6.3"
-  },
-  "overrides": {
-    "vite": {
-      "rollup": "npm:@rollup/wasm-node"
-    }
   }
 }
