@@ -82,29 +82,30 @@
             (focus)="onInputFocus($event)">
         </td>
       </ng-container>
-
+        <ng-container matColumnDef="FinalBasePrice">
+          <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br>mong muốn</th>
+          <td mat-cell *matCellDef="let element"
+            [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+            <input class="input-field custom-input" matInput type="text"
+              [value]="formatNumber(element.FinalBasePrice)"
+              (input)="onInputFinalBasePrice($event, element);updateCost(element);formatNumber(element.FinalBasePrice)" (keydown)="validateNumber($event)"
+              tabindex="1" (focus)="onInputFocus($event)" name="finalBasePrice">
+          </td>
+        </ng-container>
       <!-- Cột Giá Bán -->
-      <ng-container matColumnDef="FinalBasePrice">
-        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br>mong muốn</th>
-        <td mat-cell *matCellDef="let element"
-          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-          <input class="input-field custom-input" matInput type="text" [value]="formatNumber(element.FinalBasePrice)"
-           (input)="onInputFinalBasePrice($event, element);updateCost(element)"
-            (keydown)="validateNumber($event)" tabindex="1" (focus)="onInputFocus($event)">
-        </td>
-      </ng-container>
+
 
       <ng-container matColumnDef="BasePrice">
-        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán  <br> đề xuất</th>
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br> đề xuất</th>
         <td mat-cell *matCellDef="let element"
           [style.background-color]="getProductColor(element.ParentCode || element.Code)">
           <!-- <input class="input-field custom-input" matInput type="text" [value]="formatNumber(element.BasePrice)"
             (input)="onInputBasePrice($event, element)" (keydown)="validateNumber($event)" tabindex="1"
             (focus)="onInputFocus($event)"> -->
-            {{element.BasePrice | number:'1.0-0'}}
+          {{element.BasePrice | number:'1.0-0'}}
         </td>
       </ng-container>
-      
+
       <!-- Cột Giá Vốn -->
       <ng-container matColumnDef="Cost">
         <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Vốn <br> Đơn vị </th>
@@ -171,10 +172,9 @@
         <th mat-header-cell *matHeaderCellDef>Lẻ <br>(đơn vị nhỏ nhất)</th>
         <td mat-cell *matCellDef="let element"
           [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-          <input class="input-field custom-input" matInput [(ngModel)]="element.Retail" 
-            [disabled]="!element.Master"
-            (input)="updateCost(element)"
-            (keydown)="validateNumber($event)"  (keydown.space)="openInputDialog(element)" tabindex="1" (focus)="onInputFocus($event)">
+          <input class="input-field custom-input" matInput [(ngModel)]="element.Retail" [disabled]="!element.Master"
+            (input)="updateCost(element)" (keydown)="validateNumber($event)" (keydown.space)="openInputDialog(element)"
+            tabindex="1" (focus)="onInputFocus($event)">
         </td>
       </ng-container>
 
@@ -197,12 +197,10 @@
         <th mat-header-cell *matHeaderCellDef>Thùng</th>
         <td mat-cell *matCellDef="let element"
           [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-          <input class="input-field custom-input" matInput [(ngModel)]="element.Box" 
-            [disabled]="!element.Master"
-            (input)="updateCost(element)"
-            (keydown)="validateNumber($event)" tabindex="1" (focus)="onInputFocus($event)"
+          <input class="input-field custom-input" matInput [(ngModel)]="element.Box" [disabled]="!element.Master"
+            (input)="updateCost(element)" (keydown)="validateNumber($event)" tabindex="1" (focus)="onInputFocus($event)"
             (keydown.space)="openInputDialog(element)">
-            
+
         </td>
       </ng-container>
 
@@ -211,12 +209,10 @@
         <th mat-header-cell *matHeaderCellDef>Chiết khấu trên<br> 1 sản phẩm</th>
         <td mat-cell *matCellDef="let element"
           [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-          <input class="input-field custom-input" matInput type="text"
-            [disabled]="!element.Master"
+          <input class="input-field custom-input" matInput type="text" [disabled]="!element.Master"
             [value]="element.Discount === 0 ? '': formatNumber(element.Discount)"
             (input)="onInputDiscount($event, element); updateCost(element)" (keydown)="validateNumber($event)"
-            (keydown.space)="openInputDialog(element)"
-            tabindex="1" (focus)="onInputFocus($event)">
+            (keydown.space)="openInputDialog(element)" tabindex="1" (focus)="onInputFocus($event)">
         </td>
       </ng-container>
 
@@ -224,12 +220,10 @@
         <th mat-header-cell *matHeaderCellDef>Chiết khấu trên <br>tổng tiền</th>
         <td mat-cell *matCellDef="let element"
           [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-          <input class="input-field custom-input" matInput type="text"
-            [disabled]="!element.Master"
+          <input class="input-field custom-input" matInput type="text" [disabled]="!element.Master"
             [value]="element.Discount2 === 0 ? '': formatNumber(element.Discount2)"
             (input)="onInputDiscount2($event, element); updateCost(element)" (keydown)="validateNumber($event)"
-            (keydown.space)="openInputDialog(element)"
-            tabindex="1" (focus)="onInputFocus($event)">
+            (keydown.space)="openInputDialog(element)" tabindex="1" (focus)="onInputFocus($event)">
         </td>
       </ng-container>
 
@@ -238,12 +232,10 @@
         <th mat-header-cell *matHeaderCellDef>Thành tiền</th>
         <td mat-cell *matCellDef="let element"
           [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-          <input class="input-field custom-input" matInput type="text"
-            [disabled]="!element.Master"
+          <input class="input-field custom-input" matInput type="text" [disabled]="!element.Master"
             [value]="element.TotalPrice === 0 ? '' : formatNumber(element.TotalPrice)"
-            (input)="onInputTotalPrice($event, element); updateCost(element)" (keydown)="validateNumber($event)" 
-            (keydown.space)="openInputDialog(element);"
-            tabindex="1" (focus)="onInputFocus($event)">
+            (input)="onInputTotalPrice($event, element); updateCost(element)" (keydown)="validateNumber($event)"
+            (keydown.space)="openInputDialog(element);" tabindex="1" (focus)="onInputFocus($event)">
         </td>
       </ng-container>
 
@@ -255,7 +247,7 @@
           {{element.Unit}}
         </td>
       </ng-container>
-    
+
       <!-- Hàng tiêu đề -->
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <!-- Hàng dữ liệu -->

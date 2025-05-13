@@ -1,5 +1,5 @@
 # Ignore Python cache files
-backend/__pycache__/
+__pycache__/
 *.pyc
 *.pyo
 
@@ -8,12 +8,11 @@ backend/__pycache__/
 run.sh
 env.js
 # Ignore virtual environments
-backend/venv/
-backend/.venv/
+venv/
+.venv/
 
 # Ignore IDE-specific files
-backend/.vscode/
-frontend/.vscode/
+.vscode/
 backend/.idea/
 
 # Ignore logs and temporary files
@@ -33,11 +32,11 @@ Thumbs.db
 *.dylib
 
 # Ignore node_modules (if applicable)
-frontend/node_modules/
+node_modules/
 
 # Ignore build artifacts
-frontend/dist/
-frontend/build/
+dist/
+build/
 
-frontend/.angular/
-backend/static/
+.angular/
+static/

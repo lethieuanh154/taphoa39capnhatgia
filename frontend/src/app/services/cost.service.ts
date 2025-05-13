@@ -14,27 +14,24 @@ export class CostService {
   masterDiscount: string = '';
   masterFinalBasePrice: string = '';
 
-  getOldProducts(code: any) {
+  private getOldProductsMaster(code: any) {
     const oldProduct = Object.entries(localStorage)
       .filter(([key]) => key.startsWith("grouped_"))
       .map(([key, value]) => ({ key: key.replace('grouped_', ''), value: JSON.parse(value) }));
+
+
     const oldItem = oldProduct.map((k) => {
       return k.value[code]?.find((c: { Code: any }) => c.Code == code);
     }).find(item => item !== undefined); // Find the first non-undefined result
 
-    return {
-      BasePrice: oldItem?.BasePrice || 0,
-      OnHand: oldItem?.OnHand || 0,
-      Cost: oldItem?.Cost || 0,
-    };
-
+    return oldItem
   }
 
-  updateCost(element: any) {
+  updateCostMaster(element: any) {
     let currentBaseprice: any;
     let currentCost: any;
     let currentOnHand: any;
-    const oldProduct = this.getOldProducts(element.Code) || 0
+    const oldProduct = this.getOldProductsMaster(element.Code) || 0
     currentBaseprice = oldProduct.BasePrice || 0;
     currentOnHand = oldProduct.OnHand || 0
     currentCost = oldProduct.Cost || 0
@@ -56,10 +53,8 @@ export class CostService {
     this.masterCost = element.Cost
     this.masterDiscount = element.Discount
     this.masterFinalBasePrice = element.FinalBasePrice
-
-    localStorage.setItem(`editing_${element.Code}`, JSON.stringify(element));
+    localStorage.setItem(`editing_childProduct_${element.Code}`, JSON.stringify(element));
   }
-
 
 
 
@@ -86,10 +81,9 @@ export class CostService {
                 currentItem.Cost = (currentItem.Cost - (parseInt(this.masterDiscount) * parseInt(currentItem.ConversionValue))) || 0;
               }
               currentItem.BasePrice = Math.round((matchingProduct.BasePrice + (currentItem.Cost - matchingProduct.Cost)) / 100) * 100 || 0;
-              console.log(currentItem,currentItem.FinalBasePrice)
+
               if (parseInt(this.masterFinalBasePrice) > 0) {
                 currentItem.FinalBasePrice = Math.round((parseInt(this.masterFinalBasePrice) / parseInt(this.masterConversionValue) * parseInt(currentItem.ConversionValue)) || 0);
-                console.log(currentItem,currentItem.FinalBasePrice)
               }
             }
 
@@ -102,5 +96,10 @@ export class CostService {
       });
     });
   }
+  updateFinalBasePrice(changedFinalBasePrice: any, filteredProducts: any[]) {
 
+    filteredProducts.forEach((currentItem) => {
+     localStorage.setItem(`editing_childProduct_${currentItem.Code}`, JSON.stringify(currentItem));
+    });
+  }
 }
