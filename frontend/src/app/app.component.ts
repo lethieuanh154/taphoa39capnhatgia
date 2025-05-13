@@ -1,9 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, debounceTime, map, startWith } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -57,6 +57,7 @@ import { CostService } from './services/cost.service';
 })
 
 export class AppComponent implements OnInit {
+
   searchControl = new FormControl('');
   filteredOptions!: Observable<{ value: string; FullName: string; Image: string; }[]>;
   options: { FullName: string; Image: string }[] = []; // Replace with your data source
@@ -100,10 +101,11 @@ export class AppComponent implements OnInit {
   ) { }
 
   activeButton: string = '';
-
+  userChangedFinalBasePrice = false;
+  changedFinalBasePrice: string = '';
   ngOnInit() {
     this.loadCategories();
-    const groupedProducts = groupProducts(this.filteredProducts);
+    // const groupedProducts = groupProducts(this.filteredProducts);
     assignColorsToProductList(this.filteredProducts, this.productColors);
     this.filteredOptions = this.searchControl.valueChanges.pipe(
       startWith(''),
@@ -116,6 +118,9 @@ export class AppComponent implements OnInit {
         this.searchTerm = selectedOption.FullName; // Update searchTerm with the selected option
       }
     });
+
+
+
   }
 
   private _filter(value: string): any[] {
@@ -201,22 +206,23 @@ export class AppComponent implements OnInit {
     showNotification('Đã xóa cache thành công !')
   }
 
-
   onSave() {
     onSave(this.searchTerm);
   }
-
-
-
 
   showEditedProducts() {
     showEditedProducts(this.searchTerm, this.filteredProducts);
   }
 
-  changedBasePrice: any;
   updateCost(element: any) {
-    this.costService.updateCost(element);
-    this.costService.updateCostChildItems(this.filteredProducts);
+    if (element.Master) {
+      this.costService.updateCostMaster(element);
+      this.costService.updateCostChildItems(this.filteredProducts);
+    } else {
+      this.costService.updateFinalBasePrice(this.changedFinalBasePrice, this.filteredProducts);
+    }
+
+
   }
 
   validateNumber(event: KeyboardEvent) {
