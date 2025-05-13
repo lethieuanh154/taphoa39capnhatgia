@@ -35,7 +35,7 @@ Thumbs.db
 node_modules/
 
 # Ignore build artifacts
-dist/*
+dist/
 build/
 
 .angular/
