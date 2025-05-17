@@ -82,16 +82,24 @@
             (focus)="onInputFocus($event)">
         </td>
       </ng-container>
-        <ng-container matColumnDef="FinalBasePrice">
-          <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br>mong muốn</th>
-          <td mat-cell *matCellDef="let element"
-            [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-            <input class="input-field custom-input" matInput type="text"
-              [value]="formatNumber(element.FinalBasePrice)"
-              (input)="onInputFinalBasePrice($event, element);updateCost(element);formatNumber(element.FinalBasePrice)" (keydown)="validateNumber($event)"
-              tabindex="1" (focus)="onInputFocus($event)" name="finalBasePrice">
-          </td>
-        </ng-container>
+
+      <ng-container matColumnDef="AverageCheckPoint">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Tính <br>Trung bình?</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input  [disabled]="!element.Master" type="checkbox" style="width: 20px;height:20px;" tabindex="1" [(ngModel)]="element.AverageCheckPoint">
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="FinalBasePrice">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br>mong muốn</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput type="text" [value]="formatNumber(element.FinalBasePrice)"
+            (input)="onInputFinalBasePrice($event, element);updateCost(element);formatNumber(element.FinalBasePrice)"
+            (keydown)="validateNumber($event)" tabindex="1" (focus)="onInputFocus($event)" name="finalBasePrice">
+        </td>
+      </ng-container>
       <!-- Cột Giá Bán -->
 
 

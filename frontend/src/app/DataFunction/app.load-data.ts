@@ -43,42 +43,44 @@ export function loadData(
         data.forEach((item: any) => {
           if (item.UnitList && item.UnitList.length > 0) {
             // item.UnitList.forEach((unit: any) => {
-              products.push({
-                Image: item.Image || '',
-                Code: item.Code || '',
-                FullName: item.FullName || '',
-                BasePrice: item.BasePrice || 0,
-                FinalBasePrice: item.FinalBasePrice||0,
-                OnHand: item.OnHand || 0,
-                Cost: item.LatestPurchasePrice || 0,
-                PackCost: item.PackCost || 0,
-                OriginalBoxPrice: item.OriginalBoxPrice || 0,
-                Description: item.Description
-                  ? item.Description.replace(/<\/?[^>]+(>|$)/g, '')
-                  : '',
-                Unit: item.UnitName || '',
-                PackingSpec: item.PackingSpec || 0,
-                UnitSpec: item.UnitSpec || 0,
-                Retail: item.Retail || 0,
-                Box: item.Box || 0,
-                Discount: item.Discount || 0,
-                Discoun2: item.Discount2 || 0,
-                ConversionValue: item.ConversionValue || 0,
-                TotalPrice: item.TotalPrice || 0,
-                GroupName: item.Name,
-                Edited: false,
-                Master: false,
-                Id: item.Id
-                
-              });
+            products.push({
+              Image: item.Image || '',
+              Code: item.Code || '',
+              FullName: item.FullName || '',
+              AverageCheckPoint: item.AverageCheckPoint || false,
+              BasePrice: item.BasePrice || 0,
+              FinalBasePrice: item.FinalBasePrice || 0,
+              OnHand: item.OnHand || 0,
+              Cost: item.LatestPurchasePrice || 0,
+              PackCost: item.PackCost || 0,
+              OriginalBoxPrice: item.OriginalBoxPrice || 0,
+              Description: item.Description
+                ? item.Description.replace(/<\/?[^>]+(>|$)/g, '')
+                : '',
+              Unit: item.UnitName || '',
+              PackingSpec: item.PackingSpec || 0,
+              UnitSpec: item.UnitSpec || 0,
+              Retail: item.Retail || 0,
+              Box: item.Box || 0,
+              Discount: item.Discount || 0,
+              Discoun2: item.Discount2 || 0,
+              ConversionValue: item.ConversionValue || 0,
+              TotalPrice: item.TotalPrice || 0,
+              GroupName: item.Name,
+              Edited: false,
+              Master: false,
+              Id: item.Id
+
+            });
             // });
           } else {
             products.push({
               Image: item.Image,
               Code: item.Code,
               FullName: item.FullName,
+               AverageCheckPoint: item.AverageCheckPoint || false,
               BasePrice: item.BasePrice || 0,
-              FinalBasePrice: item.FinalBasePrice||0,
+              FinalBasePrice: item.FinalBasePrice || 0,
               OnHand: item.OnHand || 0,
               Cost: item.Cost || 0,
               PackCost: item.PackCost || 0,

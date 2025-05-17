@@ -32,24 +32,35 @@ export function onSave(searchTerm: string) {
     if (!masterItems.some((item) => item.Code === key[0])) {
       delete groupedProducts[key[0]];
     }
-
   })
+  allEditedProducts.push(groupedProducts);
+  saveToLocalStorage(searchTerm, allEditedProducts);
   cleanLocalStorage();
 
-  saveToLocalStorage(`edited_products_${searchTerm}`, groupedProducts);
+
   showNotification('Đã lưu thành công !')
 }
-
+let allEditedProducts: any[] = [];
 
 function cleanLocalStorage(): void {
-  for (let i = localStorage.length - 1; i >= 0; i--) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith('editing_')) {
-      localStorage.removeItem(key);
+  Object.keys(localStorage).forEach((k) => {
+    if (k && k.startsWith('editing_')) {
+
+      localStorage.removeItem(k);
     }
-  }
+  })
+
 }
 
-function saveToLocalStorage(key: string, data: any): void {
-  localStorage.setItem(key, JSON.stringify(data));
+function saveToLocalStorage(searchTerm: string, data: any): void {
+  localStorage.setItem(`edited_products_${searchTerm}`, JSON.stringify(data));
+
 }
+export function clearCache() {
+  Object.keys(localStorage).forEach((key) => {
+    localStorage.removeItem(key); // Xóa tất cả sản phẩm
+  });
+  allEditedProducts=[]
+  showNotification('Đã xóa cache thành công !')
+}
+

@@ -8,6 +8,7 @@ interface Product {
     Image: string;
     Code: string;
     FullName: string;
+    AverageCheckPoint: false,
     BasePrice: number;
     FinalBasePrice: number,
     OnHand: number;
@@ -132,8 +133,9 @@ function transformApiData(data: any[]): Product[] {
         Image: item.Image,
         Code: item.Code,
         FullName: item.Name,
+        AverageCheckPoint: item.AverageCheckPoint || false,
         BasePrice: item.BasePrice || 0,
-        FinalBasePrice: item.FinalBasePrice||0,
+        FinalBasePrice: item.FinalBasePrice || 0,
         OnHand: item.OnHand || 0,
         Cost: item.Cost || 0,
         PackCost: item.PackCost || 0,

@@ -3,12 +3,12 @@ import os
 import json
 from unidecode import unidecode  # Thêm thư viện unidecode để loại bỏ dấu tiếng Việt
 from flask_cors import CORS
-
+from Utility.get_env import  LatestBranchId, retailer
 from FromKiotViet.get_all_product_by_category import get_items_category
 from FromKiotViet.get_category import get_category
 from FromKiotViet.get_one_product import get_item
 from FromKiotViet.get_authorization import auth_token
-app = Flask(__name__, static_folder='static/first-app/browser')
+app = Flask(__name__, static_folder='static/taphoa39/browser')
 CORS(app) 
 
 @app.route("/")
@@ -26,7 +26,7 @@ def serve_static_files(path):
 def get_authen():
     try:
         if auth_token:
-            au={"access_token":auth_token}
+            au={"retailer":retailer,"LatestBranchId":LatestBranchId,"access_token":auth_token, }
 
             return jsonify(au), 200
         else:
