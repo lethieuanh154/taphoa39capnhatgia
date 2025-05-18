@@ -39,7 +39,16 @@ export class CostService {
     this.masterCode = element.Code
 
     let newCost: number = 0;
-    if (element.Box !== 0 && element.Retail !== 0 && element.TotalPrice !== 0) {
+    let retail = element.Retail
+    let box = element.Box
+    if (element.Retail > element.ConversionValue) {
+      retail = element.Retail % element.ConversionValue;
+      box = (element.Retail - (element.Retail % element.ConversionValue)) / element.ConversionValue;
+    }
+
+    if (element.Box === 0 && element.Retail === 0 && element.TotalPrice === 0) {
+
+    } else {
       if (element.AverageCheckPoint === true) {
         newCost = element.Cost;
         element.Cost = ((newCost * element.OnHand * element.ConversionValue) + (currentCost * currentOnHand * element.ConversionValue)) / ((element.OnHand + currentOnHand) * element.ConversionValue)

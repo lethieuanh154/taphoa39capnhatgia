@@ -19,7 +19,6 @@ import { assignColorsToProductList } from './DisplayChange/app.color';
 import { validateNumber } from './DisplayChange/app.validate-number';
 import { onSearch } from './DataFunction/app.search';
 import { onSave, clearCache } from './DataFunction/app.save';
-// import { updateCost, updateCostChildItems } from './DataFunction/app.update-cost';
 import { showEditedProducts } from './DisplayChange/app.show';
 import { loadCategories } from './Category/app.load-categories';
 import { loadData } from './DataFunction/app.load-data';
@@ -115,7 +114,7 @@ export class AppComponent implements OnInit {
         this.searchControl.setValue(transcript);
       });
     };
-   
+
     this.recognition.onerror = (event: any) => {
       console.error('Lỗi khi nhận giọng nói:', event.error);
     };
@@ -353,7 +352,7 @@ export class AppComponent implements OnInit {
       height: 'auto',  // hoặc 'auto'
       maxWidth: '100vw'
     });
-
+    const currentCost = element.Cost;
     dialogRef.afterClosed().subscribe(result => {
       if (result !== undefined) {
         element.Box = result.box
@@ -361,7 +360,7 @@ export class AppComponent implements OnInit {
         element.Discount = result.discount
         element.Discount2 = result.discount2
         element.TotalPrice = result.totalPrice
-        const currentCost = element.Cost;
+
         element.Cost = (parseInt(element.TotalPrice) / (parseInt(element.Box) * parseInt(element.ConversionValue) + parseInt(element.Retail))) * parseInt(element.ConversionValue) || 0;
 
         if (element.Discount2 > 0) {
@@ -374,17 +373,25 @@ export class AppComponent implements OnInit {
         const oldProducts = Object.entries(localStorage)
           .filter(([key]) => key.startsWith("grouped_"))
           .map(([_, value]) => JSON.parse(value || "[]"));
+
+        this.costService.masterCode = element.Code;
+        this.costService.masterOnHand = element.OnHand;
+        this.costService.masterConversionValue = element.ConversionValue;
+        this.costService.masterDiscount = element.Discount;
+        this.costService.masterFinalBasePrice = element.FinalBasePrice;
+        this.costService.masterCost = element.Cost;
         this.filteredProducts.forEach((currentItem) => {
           oldProducts.forEach((oP) => {
             const productGroup = oP[this.costService.masterCode];
             if (productGroup) {
+              // Tìm sản phẩm trong nhóm sản phẩm
               const matchingProduct = productGroup.find((o: any) => o.Code === currentItem.Code);
               if (matchingProduct) {
+
                 if (currentItem.Master) {
                   currentItem.Cost = Math.round(currentItem.Cost) || 0;
                   currentItem.BasePrice = Math.round(currentItem.BasePrice * 100) / 100 || 0;
                 } else {
-
                   currentItem.OnHand = (parseFloat(this.costService.masterOnHand) * parseFloat(this.costService.masterConversionValue)) / parseFloat(currentItem.ConversionValue) || 0;
                   currentItem.Cost = Math.round((parseInt(this.costService.masterCost) / parseInt(this.costService.masterConversionValue) * parseInt(currentItem.ConversionValue)) || 0);
                   if (parseInt(this.costService.masterDiscount) > 0) {
