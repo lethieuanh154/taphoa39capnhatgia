@@ -3,12 +3,12 @@ import { groupProducts } from "./app.group-item";
 export function assignColorsToProductList(filteredProducts: any[], productColors: { [key: string]: string }) {
     // Group products based on the ListProduct field of the first product
     const groupedProducts = groupProducts(filteredProducts);
-
     const colors = [
+        '#aabcee',
+        '#aed581', // Màu xanh lá sáng nhạt
         '#ffcc80', // Màu cam nhạt
         '#ffab91', // Màu đỏ nhạt
         '#80deea', // Màu xanh nhạt
-        '#a5d6a7', // Màu xanh lá nhạt
         '#e6ee9c', // Màu vàng nhạt
         '#bcaaa4', // Màu nâu nhạt
         '#ce93d8', // Màu tím nhạt
@@ -22,7 +22,7 @@ export function assignColorsToProductList(filteredProducts: any[], productColors
         '#9575cd', // Màu tím đậm nhạt
         '#4fc3f7', // Màu xanh biển nhạt
         '#ffb74d', // Màu cam sáng nhạt
-        '#aed581', // Màu xanh lá sáng nhạt
+        
         '#e57373', // Màu đỏ sáng nhạt
     ];
 
@@ -33,19 +33,19 @@ export function assignColorsToProductList(filteredProducts: any[], productColors
         productColors[parentCode] = groupColor;
         groupedProducts[parentCode].forEach((childProduct) => {
             if (childProduct.Master) {
-            productColors[childProduct.Code] = darkerColor;
+                productColors[childProduct.Code] = darkerColor;
             } else {
-            productColors[childProduct.Code] = groupColor;
+                productColors[childProduct.Code] = groupColor;
             }
         });
 
-    function darkenColor(color: string): string {
-        // Simple function to darken a hex color
-        const colorValue = parseInt(color.slice(1), 16);
-        const r = Math.max((colorValue >> 16) - 30, 0);
-        const g = Math.max(((colorValue >> 8) & 0x00ff) - 30, 0);
-        const b = Math.max((colorValue & 0x0000ff) - 30, 0);
-        return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
-    }
+        function darkenColor(color: string): string {
+            // Simple function to darken a hex color
+            const colorValue = parseInt(color.slice(1), 16);
+            const r = Math.max((colorValue >> 16) - 30, 0);
+            const g = Math.max(((colorValue >> 8) & 0x00ff) - 30, 0);
+            const b = Math.max((colorValue & 0x0000ff) - 30, 0);
+            return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+        }
     });
 }

@@ -5,9 +5,11 @@
 <div class="container mt-5">
   <mat-card>
     <mat-form-field>
+    
       <input type="text" class="search-bar" matInput [formControl]="searchControl" [matAutocomplete]="auto"
         placeholder="Tìm kiếm: nhập mã hàng hoặc tên hàng và gõ Enter... " (keyup.enter)="onSearch($event)">
       <mat-icon matPrefix class="my-icon">search</mat-icon>
+        <button mat-icon-button matPrefix  (click)="startVoiceInput()">🎤</button>
       <mat-autocomplete #auto="matAutocomplete">
         <mat-option *ngFor="let option of filteredOptions | async" [value]="option.FullName">
           <img [src]="option.Image" alt="option image" class="option-image">
@@ -82,16 +84,24 @@
             (focus)="onInputFocus($event)">
         </td>
       </ng-container>
-        <ng-container matColumnDef="FinalBasePrice">
-          <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br>mong muốn</th>
-          <td mat-cell *matCellDef="let element"
-            [style.background-color]="getProductColor(element.ParentCode || element.Code)">
-            <input class="input-field custom-input" matInput type="text"
-              [value]="formatNumber(element.FinalBasePrice)"
-              (input)="onInputFinalBasePrice($event, element);updateCost(element);formatNumber(element.FinalBasePrice)" (keydown)="validateNumber($event)"
-              tabindex="1" (focus)="onInputFocus($event)" name="finalBasePrice">
-          </td>
-        </ng-container>
+
+      <ng-container matColumnDef="AverageCheckPoint">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Tính <br>Trung bình?</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input  [disabled]="!element.Master" type="checkbox" style="width: 20px;height:20px;" tabindex="1" [(ngModel)]="element.AverageCheckPoint">
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="FinalBasePrice">
+        <th class="highlight" mat-header-cell *matHeaderCellDef>Giá Bán <br>mong muốn</th>
+        <td mat-cell *matCellDef="let element"
+          [style.background-color]="getProductColor(element.ParentCode || element.Code)">
+          <input class="input-field custom-input" matInput type="text" [value]="formatNumber(element.FinalBasePrice)"
+            (input)="onInputFinalBasePrice($event, element);updateCost(element);formatNumber(element.FinalBasePrice)"
+            (keydown)="validateNumber($event)" tabindex="1" (focus)="onInputFocus($event)" name="finalBasePrice">
+        </td>
+      </ng-container>
       <!-- Cột Giá Bán -->
 
 

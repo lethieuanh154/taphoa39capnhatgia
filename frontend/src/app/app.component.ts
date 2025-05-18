@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -18,7 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { assignColorsToProductList } from './DisplayChange/app.color';
 import { validateNumber } from './DisplayChange/app.validate-number';
 import { onSearch } from './DataFunction/app.search';
-import { onSave } from './DataFunction/app.save';
+import { onSave, clearCache } from './DataFunction/app.save';
 // import { updateCost, updateCostChildItems } from './DataFunction/app.update-cost';
 import { showEditedProducts } from './DisplayChange/app.show';
 import { loadCategories } from './Category/app.load-categories';
@@ -28,7 +28,9 @@ import { groupProducts } from "./DisplayChange/app.group-item";
 import { KiotVietService } from "./DataFunction/app.send-data-to-kiotviet";
 import { CostService } from './services/cost.service';
 
-
+interface IWindow extends Window {
+  webkitSpeechRecognition: any;
+}
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -75,6 +77,7 @@ export class AppComponent implements OnInit {
     'Image',
     'Code',
     'FullName',
+    'AverageCheckPoint',
     'FinalBasePrice',
     'BasePrice',
     'Cost',
@@ -93,13 +96,34 @@ export class AppComponent implements OnInit {
 
   ];
   dataSource: any;
-
+  recognition: any;
   constructor(
     private http: HttpClient,
     public dialog: MatDialog,
-    private costService: CostService
-  ) { }
+    private costService: CostService,
+    private ngZone: NgZone
+  ) {
+    const { webkitSpeechRecognition }: IWindow = <IWindow><unknown>window;
+    this.recognition = new webkitSpeechRecognition();
+    this.recognition.lang = 'vi-VN'; // hoặc 'en-US' nếu muốn tiếng Anh
+    this.recognition.continuous = false;
+    this.recognition.interimResults = false;
 
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.ngZone.run(() => {
+        this.searchControl.setValue(transcript);
+      });
+    };
+   
+    this.recognition.onerror = (event: any) => {
+      console.error('Lỗi khi nhận giọng nói:', event.error);
+    };
+
+  }
+  startVoiceInput() {
+    this.recognition.start();
+  }
   activeButton: string = '';
   userChangedFinalBasePrice = false;
   changedFinalBasePrice: string = '';
@@ -200,10 +224,7 @@ export class AppComponent implements OnInit {
   }
 
   clearCache() {
-    Object.keys(localStorage).forEach((key) => {
-      localStorage.removeItem(key); // Xóa tất cả sản phẩm
-    });
-    showNotification('Đã xóa cache thành công !')
+    clearCache()
   }
 
   onSave() {
@@ -221,8 +242,6 @@ export class AppComponent implements OnInit {
     } else {
       this.costService.updateFinalBasePrice(this.changedFinalBasePrice, this.filteredProducts);
     }
-
-
   }
 
   validateNumber(event: KeyboardEvent) {
@@ -272,33 +291,51 @@ export class AppComponent implements OnInit {
     input.classList.add('tabbed');
     setTimeout(() => input.classList.remove('tabbed'), 300); // gỡ class sau hiệu ứng
   }
+
   onUpdate() {
     const editedProducts = Object.keys(localStorage)
       .filter((key) => key.startsWith("edited_products_"))
       .map((key) => JSON.parse(localStorage.getItem(key) || "[]"));
-
     const oldProducts = Object.keys(localStorage)
       .filter((key) => key.startsWith("grouped_"))
       .map((key) => JSON.parse(localStorage.getItem(key) || "[]"));
 
-    editedProducts.forEach((editedProduct: { [x: string]: any[]; }) => {
-      const editedProductKeys = Object.keys(editedProduct);
+    let editedProductKeys: any[] = [];
+    editedProducts.forEach((editedProduct: any) => {
+      editedProduct.forEach((i: any) => {
+        editedProductKeys.push(Object.keys(i))
+      })
+    })
 
-      editedProductKeys.forEach((key) => {
+    editedProducts.forEach((editedProduct: any) => {
+
+      editedProductKeys.forEach((keys) => {
         oldProducts.forEach((oldProduct) => {
-          if (oldProduct[key]) {
-            editedProduct[key].forEach((editedItem: any) => {
-              if (editedItem.FinalBasePrice > 0) {
-                editedItem.BasePrice = editedItem.FinalBasePrice
-              }
-              const matchingOldItem = oldProduct[key].find((oldItem: any) => oldItem.Code === editedItem.Code);
+          keys.forEach((key: any) => {
+            if (oldProduct[key]) {
 
-              if (matchingOldItem) {
-                editedItem['OldCost'] = matchingOldItem.Cost;
-                editedItem['OldBasePrice'] = matchingOldItem.BasePrice;
-              }
-            });
-          }
+
+              editedProduct.forEach((editedItem: any) => {
+                Object.values(editedItem).forEach((e: any) => {
+                  e.forEach((p: any) => {
+                    if (p.FinalBasePrice > 0) {
+                      p.BasePrice = p.FinalBasePrice
+                    }
+
+                    const matchingOldItem = oldProduct[key].find((oldItem: any) => oldItem.Code === p.Code);
+
+                    if (matchingOldItem) {
+                      p['OldCost'] = matchingOldItem.Cost;
+                      p['OldBasePrice'] = matchingOldItem.BasePrice;
+                    }
+                  })
+
+                })
+
+              });
+            }
+          })
+
         });
       });
     });
@@ -474,19 +511,32 @@ export class LowStockDialog {
 export class EditedItemDialog {
   displayedColumns: string[] = ['Image', 'Code', 'FullName', 'BasePrice', 'OldBasePrice', 'Cost', 'OldCost', 'OnHand'];
   filteredProducts: any[] = []; // Lưu danh sách sản phẩm đã lọc
-
+  productColors: { [key: string]: string } = {};
   constructor(
     public dialogRef: MatDialogRef<EditedItemDialog>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
+    const seen = new Set();
+
     data.products.forEach((item: any) => {
-      Object.entries(item).forEach((p: any) => {
-        p[1].forEach((i: any) => {
-          this.filteredProducts.push(i);
-        })
-      })
+      Object.values(item).forEach((group: any) => {
+        Object.values(group as any).forEach((arr: any) => {
+          (arr as any[]).forEach((y: any) => {
+            const key = JSON.stringify(y);
+            if (!seen.has(key)) {
+              seen.add(key);
+              this.filteredProducts.push(y);
+            }
+          });
+        });
+      });
     });
+    assignColorsToProductList(this.filteredProducts, this.productColors)
   }
+  getProductColor(productCode: string): string {
+    return this.productColors[productCode] || '#ffffff'; // Mặc định là màu trắng
+  }
+
   getCostClass(cost: number, oldCost: number): string {
     if (cost > oldCost) return 'text-red';
     if (cost < oldCost) return 'text-green';
@@ -511,24 +561,23 @@ export class EditedItemDialog {
   }
   sendDataClick(): void {
     const kiotVietService = new KiotVietService();
+    const groupedProduct = groupProducts(this.filteredProducts)
+    Object.entries(groupedProduct).forEach((p: any) => {
+
+      const lowestConversionItem = p[1].reduce((prev: any, curr: any) => {
+        return parseFloat(curr.ConversionValue) < parseFloat(prev.ConversionValue) ? curr : prev;
+      }, p[1][0]);
+      const rest = p[1].filter((item: any) => item !== lowestConversionItem); // Lấy phần còn lại
+      console.log(rest)
+
+      // // const [lowestConversionItem, ...rest] = p[1];
+      kiotVietService.sendProductData(lowestConversionItem, rest)
 
 
-    this.data.products.forEach((item: any) => {
-      Object.entries(item).forEach((p: any) => {
-        const lowestConversionItem = p[1].reduce((prev: any, curr: any) => {
-          return parseFloat(curr.ConversionValue) < parseFloat(prev.ConversionValue) ? curr : prev;
-        }, p[1][0]);
+      // p[1].forEach((i: any) => {
+      //   kiotVietService.sendProductData(i)
+      // })
 
-        const rest = p[1].filter((item: any) => item !== lowestConversionItem); // Lấy phần còn lại
-
-        // const [lowestConversionItem, ...rest] = p[1];
-        kiotVietService.sendProductData(lowestConversionItem, rest)
-
-
-        // p[1].forEach((i: any) => {
-        //   kiotVietService.sendProductData(i)
-        // })
-      })
     });
 
     showNotification('Đã gửi dữ liệu thành công!')

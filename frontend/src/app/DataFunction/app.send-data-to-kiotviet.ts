@@ -2,8 +2,8 @@ import { environment } from "src/environments/environment";
 
 interface KiotVietAuthResponse {
     access_token: string;
-    expires_in: number;
-    token_type: string;
+    retailer: number;
+    LatestBranchId: string;
 }
 
 interface KiotVietProductRequest {
@@ -16,8 +16,8 @@ const env = (window as any).__env;
 export class KiotVietService {
     private readonly updateItemUrl = 'https://api-man1.kiotviet.vn/api';
     private readonly getUpdateItemUrl = 'https://api-man1.kiotviet.vn/api/products';
-    private readonly retailer = env.retailer; // Replace with your retailer
-    private readonly branchId = env.LatestBranchId; // Replace with your branch ID
+    private retailer: any | null = null;// Replace with your retailer
+    private LatestBranchId: any | null = null; // Replace with your branch ID
     private accessToken: string | null = null;
     private async getAccessToken(): Promise<string> {
         if (this.accessToken) {
@@ -38,6 +38,8 @@ export class KiotVietService {
 
             const data: KiotVietAuthResponse = await response.json();
             this.accessToken = data.access_token;
+            this.LatestBranchId = data.LatestBranchId;
+            this.retailer = data.retailer;
             return this.accessToken;
         } catch (error) {
             console.error('Error getting access token:', error);
@@ -53,7 +55,7 @@ export class KiotVietService {
                     'Content-Type': 'application/json',
                     'Authorization': token,
                     'Retailer': this.retailer,
-                    'BranchId': this.branchId,
+                    'BranchId': this.LatestBranchId,
                 }
             });
 
@@ -89,17 +91,15 @@ export class KiotVietService {
         })
         const fD = new FormData();
         fD.append("product", JSON.stringify(formDataGetFromKiotViet.Product))
-        fD.append("BranchForProductCostss", `[{ "Id": ${env.LatestBranchId}, "Name": "Chi nhánh trung tâm" }]`)
+        fD.append("BranchForProductCostss", `[{ "Id": ${this.LatestBranchId}, "Name": "Chi nhánh trung tâm" }]`)
         fD.append("ListUnitPriceBookDetail", "[]")
-
         try {
-            const token = await this.accessToken || '';
             const response = await fetch(`${this.updateItemUrl}/products/photo`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': token,
+                    'Authorization': this.accessToken || '',
                     'Retailer': this.retailer,
-                    'BranchId': this.branchId
+                    'BranchId': this.LatestBranchId
                 },
                 body: fD
             });
