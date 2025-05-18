@@ -5,9 +5,11 @@
 <div class="container mt-5">
   <mat-card>
     <mat-form-field>
+    
       <input type="text" class="search-bar" matInput [formControl]="searchControl" [matAutocomplete]="auto"
         placeholder="Tìm kiếm: nhập mã hàng hoặc tên hàng và gõ Enter... " (keyup.enter)="onSearch($event)">
       <mat-icon matPrefix class="my-icon">search</mat-icon>
+        <button mat-icon-button matPrefix  (click)="startVoiceInput()">🎤</button>
       <mat-autocomplete #auto="matAutocomplete">
         <mat-option *ngFor="let option of filteredOptions | async" [value]="option.FullName">
           <img [src]="option.Image" alt="option image" class="option-image">

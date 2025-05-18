@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -28,7 +28,9 @@ import { groupProducts } from "./DisplayChange/app.group-item";
 import { KiotVietService } from "./DataFunction/app.send-data-to-kiotviet";
 import { CostService } from './services/cost.service';
 
-
+interface IWindow extends Window {
+  webkitSpeechRecognition: any;
+}
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -94,13 +96,34 @@ export class AppComponent implements OnInit {
 
   ];
   dataSource: any;
-
+  recognition: any;
   constructor(
     private http: HttpClient,
     public dialog: MatDialog,
-    private costService: CostService
-  ) { }
+    private costService: CostService,
+    private ngZone: NgZone
+  ) {
+    const { webkitSpeechRecognition }: IWindow = <IWindow><unknown>window;
+    this.recognition = new webkitSpeechRecognition();
+    this.recognition.lang = 'vi-VN'; // hoặc 'en-US' nếu muốn tiếng Anh
+    this.recognition.continuous = false;
+    this.recognition.interimResults = false;
 
+    this.recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.ngZone.run(() => {
+        this.searchControl.setValue(transcript);
+      });
+    };
+   
+    this.recognition.onerror = (event: any) => {
+      console.error('Lỗi khi nhận giọng nói:', event.error);
+    };
+
+  }
+  startVoiceInput() {
+    this.recognition.start();
+  }
   activeButton: string = '';
   userChangedFinalBasePrice = false;
   changedFinalBasePrice: string = '';
@@ -544,7 +567,7 @@ export class EditedItemDialog {
       const lowestConversionItem = p[1].reduce((prev: any, curr: any) => {
         return parseFloat(curr.ConversionValue) < parseFloat(prev.ConversionValue) ? curr : prev;
       }, p[1][0]);
-       const rest = p[1].filter((item: any) => item !== lowestConversionItem); // Lấy phần còn lại
+      const rest = p[1].filter((item: any) => item !== lowestConversionItem); // Lấy phần còn lại
       console.log(rest)
 
       // // const [lowestConversionItem, ...rest] = p[1];
