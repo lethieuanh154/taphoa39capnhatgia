@@ -47,20 +47,21 @@ export class CostService {
     }
 
     if (element.Box === 0 && element.Retail === 0 && element.TotalPrice === 0) {
-
+    } else if (element.Box > 0 || element.Retail > 0 && element.TotalPrice === 0) {
+      element.Cost = currentCost
     } else {
       if (element.AverageCheckPoint === true) {
         newCost = element.Cost;
         element.Cost = ((newCost * element.OnHand * element.ConversionValue) + (currentCost * currentOnHand * element.ConversionValue)) / ((element.OnHand + currentOnHand) * element.ConversionValue)
       } else {
-        element.Cost = (parseInt(element.TotalPrice) / (parseInt(element.Box) * parseInt(element.ConversionValue) + parseInt(element.Retail))) * parseInt(element.ConversionValue) || 0;
+        element.Cost = (parseInt(element.TotalPrice) / (parseInt(box) * parseInt(element.ConversionValue) + parseInt(retail))) * parseInt(element.ConversionValue) || 0;
         if (element.Discount2 > 0) {
-          element.Cost = (parseInt(element.TotalPrice) - parseInt(element.Discount2)) / (parseInt(element.Box) * parseInt(element.ConversionValue) + parseInt(element.Retail)) * parseInt(element.ConversionValue) || 0;
+          element.Cost = (parseInt(element.TotalPrice) - parseInt(element.Discount2)) / (parseInt(box) * parseInt(element.ConversionValue) + parseInt(retail)) * parseInt(element.ConversionValue) || 0;
         }
 
       }
     }
-    element.OnHand = ((parseFloat(currentOnHand) * parseInt(element.ConversionValue) + parseInt(element.Retail) + parseInt(element.Box) * parseInt(element.ConversionValue)) / parseInt(element.ConversionValue)) || 0
+    element.OnHand = ((parseFloat(currentOnHand) * parseInt(element.ConversionValue) + parseInt(retail) + parseInt(box) * parseInt(element.ConversionValue)) / parseInt(element.ConversionValue)) || 0
 
     element.BasePrice = Math.round((parseInt(currentBaseprice) + (parseInt(element.Cost) - parseInt(currentCost))) / 100) * 100;
     this.masterOnHand = element.OnHand
